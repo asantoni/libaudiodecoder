@@ -1,0 +1,56 @@
+import os
+import SCons
+from SCons import Script
+
+project_name = "audiodecoder"
+install_root = "/usr/local"
+install_lib_dir     = install_root + "/lib";
+install_headers_dir = install_root + "/include/" + project_name,
+
+tools = ['default']
+toolpath = ['#build/']
+extra_arguments = {}
+
+env = Script.Environment(tools=tools, toolpath=toolpath, ENV=os.environ,
+                              **extra_arguments)
+
+# Import environment variables from the terminal. Note that some
+# variables correspond to variables inside the SCons env with different
+# names, eg. the shell's "CFLAGS" ---> SCons' "CCFLAGS".
+if os.environ.has_key('CC'):
+    env['CC'] = os.environ['CC']
+if os.environ.has_key('CFLAGS'):
+    env['CCFLAGS'] += SCons.Util.CLVar(os.environ['CFLAGS'])
+if os.environ.has_key('CXX'):
+    env['CXX'] = os.environ['CXX']
+if os.environ.has_key('CXXFLAGS'):
+    env['CXXFLAGS'] += SCons.Util.CLVar(os.environ['CXXFLAGS'])
+if os.environ.has_key('LDFLAGS'):
+    env['LINKFLAGS'] += SCons.Util.CLVar(os.environ['LDFLAGS'])
+
+# Setup source and include paths
+env.Append(CPPPATH= ['#src', '#include'])
+
+# General C++ compiler flags
+env.Append(CPPFLAGS = '-g')  #Debug mode
+env.Append(SHLINKFLAGS='-install_name ' + install_lib_dir + '/lib' + project_name + '.dylib') #Mac OS X only! Note the '/lib' there is not a mistake - it gives the libaudiodecoder.dylib the prefix!
+
+# CoreAudio
+env.Append(CPPPATH='/System/Library/Frameworks/AudioToolbox.framework/Headers/')
+env.Append(CPPPATH='#include/apple/')
+env.Append(LINKFLAGS='-framework AudioToolbox -framework CoreFoundation')
+env.Append(CPPDEFINES = '__COREAUDIO__')
+
+env.Append(CPPPATH= ['#src'])
+sources = Glob("*.cpp"); 
+public_headers = Glob("#include/*")
+objs = [] 
+objs.append(env.SharedObject(sources)) 
+
+project_lib = env.SharedLibrary(target=project_name, source=objs)
+
+install_lib_target =     env.Install(dir=install_lib_dir, source=[project_lib])
+install_headers_target = env.Install(dir=install_headers_dir, source=[public_headers]) 
+env.Alias('install', install_lib_target);
+env.Alias('install', install_headers_target);
+
