@@ -91,19 +91,19 @@ int AudioDecoderCoreAudio::open() {
     // get the input file format
     CAStreamBasicDescription inputFormat;
     UInt32 size = sizeof(inputFormat);
-    m_inputFormat = inputFormat;
     err = ExtAudioFileGetProperty(m_audioFile, kExtAudioFileProperty_FileDataFormat, &size, &inputFormat);
 	if (err != noErr)
 	{
         std::cerr << "AudioDecoderCoreAudio: Error getting file format." << std::endl;
 		return AUDIODECODER_ERROR;
 	}    
+    m_inputFormat = inputFormat;
     
 	// create the output format
 	CAStreamBasicDescription outputFormat;
     bzero(&outputFormat, sizeof(AudioStreamBasicDescription));
 	outputFormat.mFormatID = kAudioFormatLinearPCM;
-	outputFormat.mSampleRate = inputFormat.mSampleRate;
+	outputFormat.mSampleRate = 44100; //inputFormat.mSampleRate;
 	outputFormat.mChannelsPerFrame = 2;
     outputFormat.mFormatFlags = kAudioFormatFlagsCanonical;  
     //kAudioFormatFlagsCanonical means Native endian, float, packed on Mac OS X, 
@@ -177,6 +177,7 @@ int AudioDecoderCoreAudio::open() {
 
       AudioConverterPrimeInfo primeInfo;
       UInt32 piSize=sizeof(AudioConverterPrimeInfo);
+      memset(&primeInfo, 0, piSize);
       err = AudioConverterGetProperty(acRef, kAudioConverterPrimeInfo, &piSize, &primeInfo);
       if(err != kAudioConverterErr_PropertyNotSupported) // Only if decompressing
       {
@@ -189,6 +190,14 @@ int AudioDecoderCoreAudio::open() {
 	m_fDuration = m_iNumSamples / static_cast<float>(inputFormat.mSampleRate * m_iChannels);
 	m_iSampleRate = inputFormat.mSampleRate;
 	
+    //Convert mono files into stereo
+    if (inputFormat.NumberChannels() == 1)
+    {
+        SInt32 channelMap[2] = {0, 0}; // array size should match the number of output channels
+        AudioConverterSetProperty(acRef, kAudioConverterChannelMap, 
+                                    sizeof(channelMap), channelMap);
+    }
+
 	//Seek to position 0, which forces us to skip over all the header frames.
 	//This makes sure we're ready to just let the Analyser rip and it'll
 	//get the number of samples it expects (ie. no header frames).
@@ -233,7 +242,9 @@ unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *desti
 		AudioBufferList fillBufList;
 		fillBufList.mNumberBuffers = 1; //Decode a single track
         //See CoreAudioTypes.h for definitins of these variables:
-		fillBufList.mBuffers[0].mNumberChannels = m_inputFormat.mChannelsPerFrame;
+        int channels = m_clientFormat.NumberChannels();
+        std::cout << "channels: " << channels << std::endl;
+		fillBufList.mBuffers[0].mNumberChannels = channels;
 		fillBufList.mBuffers[0].mDataByteSize = numFramesToRead*2 * sizeof(SAMPLE);
 		fillBufList.mBuffers[0].mData = (void*)(&destBuffer[numFramesRead*2]);
 			
@@ -244,6 +255,13 @@ unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *desti
 		//The actual number of frames read also comes back in numFrames.
 		//(It's both a parameter to a function and a return value. wat apple?)
 		//XThrowIfError (err, "ExtAudioFileRead");	
+        /*
+        if (err != noErr)
+        {
+            std::cerr << "Error reading samples from file" << std::endl;
+            return 0;
+        }*/
+
 		if (!numFrames) {
 				// this is our termination condition
 			break;
