@@ -269,8 +269,6 @@ unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *desti
     
     m_iPositionInSamples += numFramesRead*m_iChannels;
 
-    std::cout << "Read samples " << destBuffer[0] << " " << destBuffer[1] << std::endl;
-
     return numFramesRead*m_iChannels;
 }
 
