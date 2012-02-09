@@ -242,9 +242,7 @@ unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *desti
 		AudioBufferList fillBufList;
 		fillBufList.mNumberBuffers = 1; //Decode a single track
         //See CoreAudioTypes.h for definitins of these variables:
-        int channels = m_clientFormat.NumberChannels();
-        std::cout << "channels: " << channels << std::endl;
-		fillBufList.mBuffers[0].mNumberChannels = channels;
+		fillBufList.mBuffers[0].mNumberChannels = m_clientFormat.NumberChannels();
 		fillBufList.mBuffers[0].mDataByteSize = numFramesToRead*2 * sizeof(SAMPLE);
 		fillBufList.mBuffers[0].mData = (void*)(&destBuffer[numFramesRead*2]);
 			
