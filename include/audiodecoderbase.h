@@ -43,6 +43,12 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#define DllExport   __declspec( dllexport )
+#else
+#define DllExport
+#endif
+
 //Types
 typedef float SAMPLE;
 
@@ -51,7 +57,7 @@ typedef float SAMPLE;
 #define AUDIODECODER_OK     0
 
 
-class AudioDecoderBase
+class DllExport AudioDecoderBase
 {
     public:
         AudioDecoderBase(const std::string& filename);

@@ -41,3 +41,4 @@ Thumbs.db
 ######################
 *.swp
 .obj
+.sconf_temp

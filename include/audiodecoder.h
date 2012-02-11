@@ -42,8 +42,14 @@
 
 #include "audiodecoderbase.h"
 
-#ifdef __WINDOWS__
-#error "Windows implementation not yet available."
+#ifdef _WIN32 //Always defined on both Win32 and Win64 - http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx
+#include "audiodecodermediafoundation.h"
+
+class DllExport AudioDecoder : public AudioDecoderMediaFoundation
+{
+    public:
+        AudioDecoder(const std::string& filename) : AudioDecoderMediaFoundation(filename) {};
+};
 
 #elif __APPLE__
 #include "audiodecodercoreaudio.h"
