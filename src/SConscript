@@ -55,7 +55,7 @@ env.Append(CPPPATH= ['#src', '#include'])
 
 # General C++ compiler flags
 if platform_is_linux or platform_is_macosx:
-    env.Append(CPPFLAGS = ['-g '])  #Debug mode
+    env.Append(CPPFLAGS = '-g')  #Debug mode
 
 # Mac OS X compiler/linker flags
 if platform_is_macosx:
@@ -65,24 +65,27 @@ if platform_is_macosx:
 	env.Append(CPPPATH='/System/Library/Frameworks/AudioToolbox.framework/Headers/')
 	env.Append(CPPPATH='#include/apple/')
 	env.Append(LINKFLAGS='-framework AudioToolbox -framework CoreFoundation')
-	env.Append(CPPDEFINES = '__COREAUDIO__')
-
 
 if not env.GetOption('clean') and not SCons.Util.containsAny(os.sys.argv, ['-h', '--help']):
-	conf = Configure(env)
-	wmfError = 'Did not find Windows Media Foundation .lib files. Do you have the Windows 7 Platform SDK installed?';
-	if not conf.CheckLib('mfplat'):
-		print wmfError
-		Exit(1)
-	if not conf.CheckLib('mfreadwrite'):
-		print wmfError
-		Exit(1)
-	if not conf.CheckLib('mfuuid'):
-		print wmfError
-		Exit(1)		
-	if not conf.CheckLib('ole32'):
-		print "Did not find ole32."
-		Exit(1)			
+    conf = Configure(env)
+
+    #Note: SCons' CheckLib doesn't let you check for Mac OS X Frameworks, so we just hardcoded
+    #      the Mac dependencies in above
+
+    if platform_is_windows:
+        wmfError = 'Did not find Windows Media Foundation .lib files. Do you have the Windows 7 Platform SDK installed?';
+        if not conf.CheckLib('mfplat'):
+            print wmfError
+            Exit(1)
+        if not conf.CheckLib('mfreadwrite'):
+            print wmfError
+            Exit(1)
+        if not conf.CheckLib('mfuuid'):
+            print wmfError
+            Exit(1)		
+        if not conf.CheckLib('ole32'):
+            print "Did not find ole32."
+            Exit(1)			
 	env = conf.Finish()
 
 sources = Split(""" audiodecoderbase.cpp """)
