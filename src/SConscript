@@ -8,6 +8,9 @@ platform_is_macosx = False
 platform_is_windows = False
 platform_is_linux = False
 
+#TODO: Make this a compile flag
+debug = True
+
 if sys.platform == 'darwin':
     platform_is_macosx = True
 elif sys.platform == 'win32':
@@ -16,13 +19,14 @@ elif sys.platform == 'linux2':
     platform_is_linux = True
 
 if platform_is_macosx or platform_is_linux:
-	install_root = "/usr/local"
-	install_lib_dir     = install_root + "/lib";
-	install_headers_dir = install_root + "/include/" + project_name	
+    install_root = "/usr/local"
+    install_lib_dir     = install_root + "/lib";
+    install_headers_dir = install_root + "/include/" + project_name	
 else:
-	install_root = "C:/beatcleaver/beatcleaver-winlib"
-	install_lib_dir     = install_root;
-	install_headers_dir = install_root + "/" + project_name	
+    install_root = 'C:/beatcleaver/win32lib-msvc90-debug'
+    #install_root = 'C:/libaudiodecoder/examples/msvc2008_demo/Debug'
+    install_lib_dir     = install_root;
+    install_headers_dir = install_root + "/" + project_name	
 	
 
 tools = ['default']
@@ -50,8 +54,8 @@ if os.environ.has_key('LDFLAGS'):
 env.Append(CPPPATH= ['#src', '#include'])
 
 # General C++ compiler flags
-env.Append(CPPFLAGS = '-g')  #Debug mode
-
+if platform_is_linux or platform_is_macosx:
+    env.Append(CPPFLAGS = ['-g '])  #Debug mode
 
 # Mac OS X compiler/linker flags
 if platform_is_macosx:
@@ -91,6 +95,14 @@ elif platform_is_windows:
 public_headers = Glob("#include/*")
 objs = [] 
 objs.append(env.SharedObject(sources)) 
+
+#Must be done after the configure section
+if platform_is_windows:
+    if debug:
+        env['PDB'] = 'audiodecoder.pdb' # causes scons to generate a pdb database for windows debugging
+        env.Append(CXXFLAGS  = '/MDd')
+    else:
+        env.Append(CXXFLAGS  = '/MD')
 
 project_lib = env.SharedLibrary(target=project_name, source=objs)
 

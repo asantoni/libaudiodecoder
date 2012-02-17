@@ -41,7 +41,7 @@
 #include "audiodecodercoreaudio.h"
 
 
-AudioDecoderCoreAudio::AudioDecoderCoreAudio(const std::string& filename) 
+AudioDecoderCoreAudio::AudioDecoderCoreAudio(const std::string filename) 
 : AudioDecoderBase(filename)
 , m_headerFrames(0)
 {

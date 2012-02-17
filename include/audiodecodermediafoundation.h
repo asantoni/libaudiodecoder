@@ -26,7 +26,7 @@ class IMFMediaSource;
 
 class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
   public:
-    AudioDecoderMediaFoundation(const std::string& filename);
+    AudioDecoderMediaFoundation(const std::string filename);
     ~AudioDecoderMediaFoundation();
     int open();
     long seek(unsigned long filepos);
@@ -39,10 +39,10 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     bool readProperties();
     void copyFrames(short *dest, size_t *destFrames, const short *src,
         size_t srcFrames);
-    static inline double secondsFromMF(__int64 mf);
-    static inline __int64 mfFromSeconds(double sec);
-    static inline __int64 frameFromMF(__int64 mf);
-    static inline __int64 mfFromFrame(__int64 frame);
+    inline double secondsFromMF(__int64 mf);
+    inline __int64 mfFromSeconds(double sec);
+    inline __int64 frameFromMF(__int64 mf);
+    inline __int64 mfFromFrame(__int64 frame);
     IMFSourceReader *m_pReader;
     IMFMediaType *m_pAudioType;
     wchar_t *m_wcFilename;

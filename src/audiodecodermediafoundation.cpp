@@ -48,7 +48,20 @@ template<class T> static void safeRelease(T **ppT)
     }
 }
 
-AudioDecoderMediaFoundation::AudioDecoderMediaFoundation(const std::string& filename)
+std::wstring s2ws(const std::string& s)
+{
+ int len;
+ int slength = (int)s.length() + 1;
+ len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
+ wchar_t* buf = new wchar_t[len];
+ MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+ std::wstring r(buf);
+ delete[] buf;
+ return r;
+}
+
+
+AudioDecoderMediaFoundation::AudioDecoderMediaFoundation(const std::string filename)
     : AudioDecoderBase(filename)
     , m_pReader(NULL)
     , m_pAudioType(NULL)
@@ -63,8 +76,7 @@ AudioDecoderMediaFoundation::AudioDecoderMediaFoundation(const std::string& file
     , m_dead(false)
     , m_seeking(false)
 {
-    // these are always the same, might as well just stick them here
-    // -bkgood
+    //Defaults
     m_iChannels = kNumChannels;
     m_iSampleRate = kSampleRate;
 
@@ -94,15 +106,22 @@ int AudioDecoderMediaFoundation::open()
     //int wcFilenameLength(m_qFilename.toWCharArray(m_wcFilename));
     // toWCharArray does not append a null terminator to the string!
     //m_wcFilename[wcFilenameLength] = '\0';
-	int wcFilenameLength = m_filename.size()+1;
+	int wcFilenameLength = m_filename.size();
 	//m_wcFilename=new wchar_t[wcFilenameLength]; //already allocated in constructor
-	for(std::string::size_type i=0; i < m_filename.size(); ++i)
+	for(std::wstring::size_type i=0; i < m_filename.size(); ++i)
 	{
 		m_wcFilename[i] = m_filename[i];
 	}
 	m_wcFilename[wcFilenameLength] = (wchar_t)'\0';
-	//FIXME: Do we need to do this above?	
 
+	std::string s;
+
+//#ifdef UNICODE
+	std::wstring stemp = s2ws(m_filename); // Temporary buffer is required
+	LPCWSTR result = (LPCWSTR)stemp.c_str();
+//#else
+//	LPCWSTR result = (LPCWSTR)s.c_str();
+//#endif
 
     HRESULT hr(S_OK);
     // Initialize the COM library.
@@ -120,9 +139,9 @@ int AudioDecoderMediaFoundation::open()
     }
 
     // Create the source reader to read the input file.
-    hr = MFCreateSourceReaderFromURL(m_wcFilename, NULL, &m_pReader);
+    hr = MFCreateSourceReaderFromURL(/*m_wcFilename*/result, NULL, &m_pReader);
     if (FAILED(hr)) {
-        std::cerr << "SSMF: Error opening input file:" << m_filename << std::endl;
+        std::cerr << "SSMF: Error opening input file:" << m_filename << ", with error: " << HRESULT_CODE(hr) << std::endl;
         return AUDIODECODER_ERROR;
     }
 
@@ -149,7 +168,7 @@ long AudioDecoderMediaFoundation::seek(unsigned long filepos)
     if (sDebug) { std::cout << "seek() " << filepos << std::endl; }
     PROPVARIANT prop;
     HRESULT hr(S_OK);
-    __int64 seekTarget(filepos / kNumChannels);
+    __int64 seekTarget(filepos / m_iChannels);
     __int64 mfSeekTarget(mfFromFrame(seekTarget) - 1);
     // minus 1 here seems to make our seeking work properly, otherwise we will
     // (more often than not, maybe always) seek a bit too far (although not
@@ -196,7 +215,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
     if (sDebug) { std::cout << "read() " << size << std::endl; }
 	//TODO: Change this up if we want to support just short samples again -- Albert
     SHORT_SAMPLE *destBuffer = m_destBufferShort;
-	size_t framesRequested(size / kNumChannels);
+	size_t framesRequested(size / m_iChannels);
     size_t framesNeeded(framesRequested);
 
     // first, copy frames from leftover buffer IF the leftover buffer is at
@@ -277,7 +296,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
             error = true;
             goto releaseMBuffer;
         }
-        bufferLength /= (kBitsPerSample / 8 * kNumChannels); // now in frames
+        bufferLength /= (kBitsPerSample / 8 * m_iChannels); // now in frames
 
         if (m_seeking) {
             __int64 bufferPosition(frameFromMF(timestamp));
@@ -291,7 +310,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
                 // Uh oh. We are farther forward than our seek target. Emit
                 // silence? We can't seek backwards here.
                 SHORT_SAMPLE* pBufferCurpos = destBuffer +
-                        (size - framesNeeded * kNumChannels);
+                        (size - framesNeeded * m_iChannels);
                 __int64 offshootFrames = bufferPosition - m_nextFrame;
 
                 // If we can correct this immediately, write zeros and adjust
@@ -301,10 +320,10 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
                     std::cerr << __FILE__ << __LINE__
                                << "Working around inaccurate seeking. Writing silence for"
                                << offshootFrames << "frames";
-                    // Set offshootFrames * kNumChannels samples to zero.
+                    // Set offshootFrames * m_iChannels samples to zero.
                     memset(pBufferCurpos, 0,
                            sizeof(*pBufferCurpos) * offshootFrames *
-                           kNumChannels);
+                           m_iChannels);
                     // Now m_nextFrame == bufferPosition
                     m_nextFrame += offshootFrames;
                     framesNeeded -= offshootFrames;
@@ -323,7 +342,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
             if (m_nextFrame >= bufferPosition &&
                 m_nextFrame < bufferPosition + bufferLength) {
                 // m_nextFrame is in this buffer.
-                buffer += (m_nextFrame - bufferPosition) * kNumChannels;
+                buffer += (m_nextFrame - bufferPosition) * m_iChannels;
                 bufferLength -= m_nextFrame - bufferPosition;
                 m_seeking = false;
             } else {
@@ -334,10 +353,10 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
 
         // If the bufferLength is larger than the leftover buffer, re-allocate
         // it with 2x the space.
-        if (bufferLength * kNumChannels > m_leftoverBufferSize) {
+        if (bufferLength * m_iChannels > m_leftoverBufferSize) {
             int newSize = m_leftoverBufferSize;
 
-            while (newSize < bufferLength * kNumChannels) {
+            while (newSize < bufferLength * m_iChannels) {
                 newSize *= 2;
             }
             short* newBuffer = new short[newSize];
@@ -347,7 +366,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
             m_leftoverBuffer = newBuffer;
             m_leftoverBufferSize = newSize;
         }
-        copyFrames(destBuffer + (size - framesNeeded * kNumChannels),
+        copyFrames(destBuffer + (size - framesNeeded * m_iChannels),
             &framesNeeded, buffer, bufferLength);
 
 releaseRawBuffer:
@@ -372,23 +391,34 @@ releaseSample:
         }
         m_leftoverBufferPosition = m_nextFrame;
     }
-    long samples_read = size - framesNeeded * kNumChannels;
+    long samples_read = size - framesNeeded * m_iChannels;
     m_iCurrentPosition += samples_read;
     if (sDebug) { std::cout << "read() " << size << " returning " << samples_read << std::endl; }
 	
 	//Convert to float samples
-	SAMPLE *destBufferFloat(const_cast<SAMPLE*>(destination));
-	for (unsigned long i = 0; i < samples_read; i++)
+	if (m_iChannels == 2)
 	{
-		destBufferFloat[i] = destBuffer[i] / (float)SHRT_MAX;
+		SAMPLE *destBufferFloat(const_cast<SAMPLE*>(destination));
+		for (unsigned long i = 0; i < samples_read; i++)
+		{
+			destBufferFloat[i] = destBuffer[i] / (float)SHRT_MAX;
+		}
+	}
+	else //Assuming mono, duplicate into stereo frames...
+	{
+		SAMPLE *destBufferFloat(const_cast<SAMPLE*>(destination));
+		for (unsigned long i = 0; i < samples_read; i++)
+		{
+			destBufferFloat[i] = destBuffer[i] / (float)SHRT_MAX;
+		}
 	}
     return samples_read;
 }
 
 inline unsigned long AudioDecoderMediaFoundation::numSamples()
 {
-    unsigned long len(secondsFromMF(m_mfDuration) * kSampleRate * kNumChannels);
-    return len % kNumChannels == 0 ? len : len + 1;
+    unsigned long len(secondsFromMF(m_mfDuration) * m_iSampleRate * m_iChannels);
+    return len % m_iChannels == 0 ? len : len + 1;
 }
 
 std::vector<std::string> AudioDecoderMediaFoundation::supportedFileExtensions()
@@ -436,6 +466,46 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
         return false;
     }
 
+//Debugging:
+//Let's get some info
+	// Get the complete uncompressed format.
+    //hr = m_pReader->GetCurrentMediaType(
+    //    MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+    //   &m_pAudioType);
+	hr = m_pReader->GetNativeMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+									   0, //Index of the media type to retreive... (what does that even mean?)
+									   &m_pAudioType);
+    if (FAILED(hr)) {
+        std::cerr << "SSMF: failed to retrieve completed media type";
+        return false;
+    }
+	UINT32 allSamplesIndependent	= 0;
+	UINT32 fixedSizeSamples		= 0;
+	UINT32 sampleSize				= 0;
+	UINT32 bitsPerSample			= 0;
+	UINT32 blockAlignment			= 0;
+	UINT32 numChannels				= 0;
+	UINT32 samplesPerSecond		= 0;
+	hr = m_pAudioType->GetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, &allSamplesIndependent);
+	hr = m_pAudioType->GetUINT32(MF_MT_FIXED_SIZE_SAMPLES, &fixedSizeSamples);
+	hr = m_pAudioType->GetUINT32(MF_MT_SAMPLE_SIZE, &sampleSize);
+	hr = m_pAudioType->GetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, &bitsPerSample);
+	hr = m_pAudioType->GetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, &blockAlignment);
+	hr = m_pAudioType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &numChannels);
+	hr = m_pAudioType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &samplesPerSecond);
+
+	std::cout << "bitsPerSample: " << bitsPerSample << std::endl;
+	std::cout << "allSamplesIndependent: " << allSamplesIndependent << std::endl;
+	std::cout << "fixedSizeSamples: " << fixedSizeSamples << std::endl;
+	std::cout << "sampleSize: " << sampleSize << std::endl;
+	std::cout << "bitsPerSample: " << bitsPerSample << std::endl;
+	std::cout << "blockAlignment: " << blockAlignment << std::endl;
+	std::cout << "numChannels: " << numChannels << std::endl;
+	std::cout << "samplesPerSecond: " << samplesPerSecond << std::endl;
+
+	m_iChannels = numChannels;
+	m_iSampleRate = samplesPerSecond;
+
     hr = MFCreateMediaType(&m_pAudioType);
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to create media type";
@@ -453,7 +523,7 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
         std::cerr << "SSMF: failed to set subtype";
         return false;
     }
-
+/*
     hr = m_pAudioType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, true);
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to set samples independent";
@@ -480,25 +550,31 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
         std::cerr << "SSMF: failed to set bits per sample";
         return false;
     }
+	*/
 
     hr = m_pAudioType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT,
-        kNumChannels * (kBitsPerSample / 8));
+        numChannels * (kBitsPerSample / 8));
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to set block alignment";
         return false;
     }
 
+	/*
+	//MediaFoundation will not convert between mono and stereo without a transform!
     hr = m_pAudioType->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, kNumChannels);
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to set number of channels";
         return false;
     }
 
+	
+	//MediaFoundation will not do samplerate conversion without a transform in the pipeline.
     hr = m_pAudioType->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, kSampleRate);
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to set sample rate";
         return false;
     }
+	*/
 
     // Set this type on the source reader. The source reader will
     // load the necessary decoder.
@@ -541,7 +617,8 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
     hr = m_pAudioType->GetUINT32(MF_MT_SAMPLE_SIZE, &leftoverBufferSize);
     if (FAILED(hr)) {
         std::cerr << "SSMF: failed to get buffer size";
-        return false;
+		leftoverBufferSize = 32;
+       // return false;
     }
     m_leftoverBufferSize = static_cast<size_t>(leftoverBufferSize);
     m_leftoverBufferSize /= 2; // convert size in bytes to size in int16s
@@ -573,7 +650,7 @@ bool AudioDecoderMediaFoundation::readProperties()
     // presentation attribute MF_PD_AUDIO_ENCODING_BITRATE only exists for
     // presentation descriptors, one of which MFSourceReader is not.
     // Therefore, we calculate it ourselves.
-    //m_iBitrate = kBitsPerSample * kSampleRate * kNumChannels;
+    //m_iBitrate = kBitsPerSample * m_iSampleRate * m_iChannels;
 	//XXX: Should we implement bitrate in libaudiodecoder? Just enable that line...
 
     return true;
@@ -588,16 +665,16 @@ void AudioDecoderMediaFoundation::copyFrames(
     short *dest, size_t *destFrames, const short *src, size_t srcFrames)
 {
     if (srcFrames > *destFrames) {
-        int samplesToCopy(*destFrames * kNumChannels);
+        int samplesToCopy(*destFrames * m_iChannels);
         memcpy(dest, src, samplesToCopy * sizeof(*src));
         srcFrames -= *destFrames;
         memmove(m_leftoverBuffer,
             src + samplesToCopy,
-            srcFrames * kNumChannels * sizeof(*src));
+            srcFrames * m_iChannels * sizeof(*src));
         *destFrames = 0;
         m_leftoverBufferLength = srcFrames;
     } else {
-        int samplesToCopy(srcFrames * kNumChannels);
+        int samplesToCopy(srcFrames * m_iChannels);
         memcpy(dest, src, samplesToCopy * sizeof(*src));
         *destFrames -= srcFrames;
         if (src == m_leftoverBuffer) {
@@ -627,7 +704,7 @@ inline __int64 AudioDecoderMediaFoundation::mfFromSeconds(double sec)
  */
 inline __int64 AudioDecoderMediaFoundation::frameFromMF(__int64 mf)
 {
-    return static_cast<double>(mf) * kSampleRate / 1e7;
+    return static_cast<double>(mf) * m_iSampleRate / 1e7;
 }
 
 /**
@@ -635,5 +712,5 @@ inline __int64 AudioDecoderMediaFoundation::frameFromMF(__int64 mf)
  */
 inline __int64 AudioDecoderMediaFoundation::mfFromFrame(__int64 frame)
 {
-    return static_cast<double>(frame) / kSampleRate * 1e7;
+    return static_cast<double>(frame) / m_iSampleRate * 1e7;
 }

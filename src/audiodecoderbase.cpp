@@ -38,7 +38,7 @@
 
 #include "audiodecoderbase.h"
 
-AudioDecoderBase::AudioDecoderBase(const std::string& filename)
+AudioDecoderBase::AudioDecoderBase(const std::string filename)
 : m_iNumSamples(0)
 , m_iChannels(0)
 , m_iSampleRate(0)

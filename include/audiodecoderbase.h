@@ -60,7 +60,7 @@ typedef float SAMPLE;
 class DllExport AudioDecoderBase
 {
     public:
-        AudioDecoderBase(const std::string& filename);
+        AudioDecoderBase(const std::string filename);
         virtual ~AudioDecoderBase();
 
         int open() { return 0; };

@@ -66,7 +66,7 @@
 
 class AudioDecoderCoreAudio : public AudioDecoderBase {
 public:
-    AudioDecoderCoreAudio(const std::string& filename);
+    AudioDecoderCoreAudio(const std::string filename);
     ~AudioDecoderCoreAudio();
     // Overriding AbstractAudioDecoder
     int open();
