@@ -103,7 +103,7 @@ int AudioDecoderCoreAudio::open() {
 	CAStreamBasicDescription outputFormat;
     bzero(&outputFormat, sizeof(AudioStreamBasicDescription));
 	outputFormat.mFormatID = kAudioFormatLinearPCM;
-	outputFormat.mSampleRate = 44100; //inputFormat.mSampleRate;
+	outputFormat.mSampleRate = inputFormat.mSampleRate;
 	outputFormat.mChannelsPerFrame = 2;
     outputFormat.mFormatFlags = kAudioFormatFlagsCanonical;  
     //kAudioFormatFlagsCanonical means Native endian, float, packed on Mac OS X, 
@@ -187,8 +187,8 @@ int AudioDecoderCoreAudio::open() {
       }
 	
 	m_iNumSamples = (totalFrameCount/*-m_headerFrames*/)*m_iChannels;
-	m_fDuration = m_iNumSamples / static_cast<float>(inputFormat.mSampleRate * m_iChannels);
 	m_iSampleRate = inputFormat.mSampleRate;
+	m_fDuration = m_iNumSamples / static_cast<float>(m_iSampleRate * m_iChannels);
 	
     //Convert mono files into stereo
     if (inputFormat.NumberChannels() == 1)
