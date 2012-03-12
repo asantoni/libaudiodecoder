@@ -9,7 +9,9 @@ platform_is_windows = False
 platform_is_linux = False
 
 #TODO: Make this a compile flag
-debug = True
+debug = False
+if int(ARGUMENTS.get('debug', 0)):
+    debug = True 
 
 if sys.platform == 'darwin':
     platform_is_macosx = True
@@ -21,13 +23,16 @@ elif sys.platform == 'linux2':
 if platform_is_macosx or platform_is_linux:
     install_root = "/usr/local"
     install_lib_dir     = install_root + "/lib";
-    install_headers_dir = install_root + "/include/" + project_name	
+    install_headers_dir = install_root + "/include/" + project_name    
 else:
-    install_root = 'C:/beatcleaver/win32lib-msvc90-debug'
+    if debug:
+        install_root = '#../win32lib-msvc90-debug'
+    else:
+        install_root = '#../win32lib-msvc90-release'
     #install_root = 'C:/libaudiodecoder/examples/msvc2008_demo/Debug'
     install_lib_dir     = install_root;
-    install_headers_dir = install_root + "/" + project_name	
-	
+    install_headers_dir = install_root + "/" + project_name    
+    
 
 tools = ['default']
 toolpath = ['#build/']
@@ -59,12 +64,16 @@ if platform_is_linux or platform_is_macosx:
 
 # Mac OS X compiler/linker flags
 if platform_is_macosx:
-	env.Append(SHLINKFLAGS='-install_name ' + install_lib_dir + '/lib' + project_name + '.dylib') #Mac OS X only! Note the '/lib' there is not a mistake - it gives the libaudiodecoder.dylib the prefix!
+    env.Append(SHLINKFLAGS='-install_name ' + install_lib_dir + '/lib' + project_name + '.dylib') #Mac OS X only! Note the '/lib' there is not a mistake - it gives the libaudiodecoder.dylib the prefix!
 
-	# CoreAudio
-	env.Append(CPPPATH='/System/Library/Frameworks/AudioToolbox.framework/Headers/')
-	env.Append(CPPPATH='#include/apple/')
-	env.Append(LINKFLAGS='-framework AudioToolbox -framework CoreFoundation')
+    # CoreAudio
+    env.Append(CPPPATH='/System/Library/Frameworks/AudioToolbox.framework/Headers/')
+    env.Append(CPPPATH='#include/apple/')
+    env.Append(LINKFLAGS='-framework AudioToolbox -framework CoreFoundation')
+
+if platform_is_windows:
+    env.Append(LIBPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Lib')
+    env.Append(CPPPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Include')
 
 if not env.GetOption('clean') and not SCons.Util.containsAny(os.sys.argv, ['-h', '--help']):
     conf = Configure(env)
@@ -72,9 +81,15 @@ if not env.GetOption('clean') and not SCons.Util.containsAny(os.sys.argv, ['-h',
     #Note: SCons' CheckLib doesn't let you check for Mac OS X Frameworks, so we just hardcoded
     #      the Mac dependencies in above
 
+    # Must use the _vista prefix if targeted Vista and above (instead of 7 and 
+    # above) for Media Foundation.
+    # See: http://msdn.microsoft.com/en-us/library/windows/desktop/ee663600(v=vs.85).aspx#LibraryChangesWin7
     if platform_is_windows:
         wmfError = 'Did not find Windows Media Foundation .lib files. Do you have the Windows 7 Platform SDK installed?';
-        if not conf.CheckLib('mfplat'):
+        if not conf.CheckLib('Mf_vista'):
+            print wmfError
+            Exit(1)
+        if not conf.CheckLib('Mfplat_vista'):
             print wmfError
             Exit(1)
         if not conf.CheckLib('mfreadwrite'):
@@ -82,17 +97,17 @@ if not env.GetOption('clean') and not SCons.Util.containsAny(os.sys.argv, ['-h',
             Exit(1)
         if not conf.CheckLib('mfuuid'):
             print wmfError
-            Exit(1)		
+            Exit(1)        
         if not conf.CheckLib('ole32'):
             print "Did not find ole32."
-            Exit(1)			
-	env = conf.Finish()
+            Exit(1)            
+    env = conf.Finish()
 
 sources = Split(""" audiodecoderbase.cpp """)
 if platform_is_macosx:
-	sources += Split(""" audiodecodercoreaudio.cpp """)
+    sources += Split(""" audiodecodercoreaudio.cpp """)
 elif platform_is_windows:
-	sources += Split(""" audiodecodermediafoundation.cpp """)
+    sources += Split(""" audiodecodermediafoundation.cpp """)
 
 #Glob("*.cpp"); 
 public_headers = Glob("#include/*")
