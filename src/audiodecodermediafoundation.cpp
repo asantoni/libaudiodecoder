@@ -28,6 +28,7 @@
 #include <mfreadwrite.h>
 #include <mferror.h>
 #include <propvarutil.h>
+#include <assert.h>
 
 #include "audiodecodermediafoundation.h"
 
