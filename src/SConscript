@@ -26,9 +26,9 @@ if platform_is_macosx or platform_is_linux:
     install_headers_dir = install_root + "/include/" + project_name    
 else:
     if debug:
-        install_root = '#../win32lib-msvc90-debug'
+        install_root = '#../beatcleaver-winlib/win32lib-msvc90-debug'
     else:
-        install_root = '#../win32lib-msvc90-release'
+        install_root = '#../beatcleaver-winlib/win32lib-msvc90-release'
     #install_root = 'C:/libaudiodecoder/examples/msvc2008_demo/Debug'
     install_lib_dir     = install_root;
     install_headers_dir = install_root + "/" + project_name    

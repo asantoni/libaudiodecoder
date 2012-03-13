@@ -55,6 +55,7 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     long m_iCurrentPosition;
     bool m_dead;
     bool m_seeking;
+	unsigned int m_iBitsPerSample;
 	SHORT_SAMPLE m_destBufferShort[8192];
 };
 

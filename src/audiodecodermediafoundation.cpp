@@ -79,6 +79,7 @@ AudioDecoderMediaFoundation::AudioDecoderMediaFoundation(const std::string filen
     //Defaults
     m_iChannels = kNumChannels;
     m_iSampleRate = kSampleRate;
+	m_iBitsPerSample = kBitsPerSample;
 
     // http://social.msdn.microsoft.com/Forums/en/netfxbcl/thread/35c6a451-3507-40c8-9d1c-8d4edde7c0cc
     // gives maximum path + file length as 248 + 260, using that -bkgood
@@ -212,6 +213,7 @@ long AudioDecoderMediaFoundation::seek(unsigned long filepos)
 unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
     const SAMPLE *destination)
 {
+	assert(size < sizeof(m_destBufferShort));
     if (sDebug) { std::cout << "read() " << size << std::endl; }
 	//TODO: Change this up if we want to support just short samples again -- Albert
     SHORT_SAMPLE *destBuffer = m_destBufferShort;
@@ -296,7 +298,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
             error = true;
             goto releaseMBuffer;
         }
-        bufferLength /= (kBitsPerSample / 8 * m_iChannels); // now in frames
+        bufferLength /= (m_iBitsPerSample / 8 * m_iChannels); // now in frames
 
         if (m_seeking) {
             __int64 bufferPosition(frameFromMF(timestamp));
@@ -359,7 +361,7 @@ unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
             while (newSize < bufferLength * m_iChannels) {
                 newSize *= 2;
             }
-            short* newBuffer = new short[newSize];
+            SHORT_SAMPLE* newBuffer = new SHORT_SAMPLE[newSize];
             memcpy(newBuffer, m_leftoverBuffer,
                    sizeof(m_leftoverBuffer[0]) * m_leftoverBufferSize);
             delete [] m_leftoverBuffer;
@@ -386,7 +388,7 @@ releaseSample:
     if (m_leftoverBufferLength > 0) {
         if (framesNeeded != 0) {
             std::cerr << __FILE__ << __LINE__
-                       << "WARNING: Expected frames needed to be 0. Abandoning this file.";
+				<< "WARNING: Expected frames needed to be 0. Abandoning this file." << std::endl;
             m_dead = true;
         }
         m_leftoverBufferPosition = m_nextFrame;
@@ -395,13 +397,14 @@ releaseSample:
     m_iCurrentPosition += samples_read;
     if (sDebug) { std::cout << "read() " << size << " returning " << samples_read << std::endl; }
 	
+	const int sampleMax = 1 << (m_iBitsPerSample-1);
 	//Convert to float samples
 	if (m_iChannels == 2)
 	{
 		SAMPLE *destBufferFloat(const_cast<SAMPLE*>(destination));
 		for (unsigned long i = 0; i < samples_read; i++)
 		{
-			destBufferFloat[i] = destBuffer[i] / (float)SHRT_MAX;
+			destBufferFloat[i] = destBuffer[i] / (float)sampleMax;
 		}
 	}
 	else //Assuming mono, duplicate into stereo frames...
@@ -409,7 +412,7 @@ releaseSample:
 		SAMPLE *destBufferFloat(const_cast<SAMPLE*>(destination));
 		for (unsigned long i = 0; i < samples_read; i++)
 		{
-			destBufferFloat[i] = destBuffer[i] / (float)SHRT_MAX;
+			destBufferFloat[i] = destBuffer[i] / (float)sampleMax;
 		}
 	}
     return samples_read;
@@ -505,6 +508,7 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
 
 	m_iChannels = numChannels;
 	m_iSampleRate = samplesPerSecond;
+	m_iBitsPerSample = bitsPerSample;
 
     hr = MFCreateMediaType(&m_pAudioType);
     if (FAILED(hr)) {
@@ -550,7 +554,7 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
         std::cerr << "SSMF: failed to set bits per sample";
         return false;
     }
-	*/
+
 
     hr = m_pAudioType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT,
         numChannels * (kBitsPerSample / 8));
@@ -558,6 +562,7 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
         std::cerr << "SSMF: failed to set block alignment";
         return false;
     }
+	*/
 
 	/*
 	//MediaFoundation will not convert between mono and stereo without a transform!
@@ -650,7 +655,7 @@ bool AudioDecoderMediaFoundation::readProperties()
     // presentation attribute MF_PD_AUDIO_ENCODING_BITRATE only exists for
     // presentation descriptors, one of which MFSourceReader is not.
     // Therefore, we calculate it ourselves.
-    //m_iBitrate = kBitsPerSample * m_iSampleRate * m_iChannels;
+    //m_iBitrate = m_iBitsPerSample * m_iSampleRate * m_iChannels;
 	//XXX: Should we implement bitrate in libaudiodecoder? Just enable that line...
 
     return true;
