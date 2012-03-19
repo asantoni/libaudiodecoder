@@ -510,6 +510,12 @@ bool AudioDecoderMediaFoundation::configureAudioStream()
 	m_iChannels = numChannels;
 	m_iSampleRate = samplesPerSecond;
 	m_iBitsPerSample = bitsPerSample;
+	//For compressed files, the bits per sample is undefined, so by convention we're
+	//going to get 16-bit integers out.
+	if (m_iBitsPerSample == 0)
+	{
+		m_iBitsPerSample = kBitsPerSample;
+	}
 
     hr = MFCreateMediaType(&m_pAudioType);
     if (FAILED(hr)) {
