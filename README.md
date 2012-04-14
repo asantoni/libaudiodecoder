@@ -1,11 +1,11 @@
 libaudiodecoder
 ===============
 
-The Cross-Platform Audio Playback API
+The Cross-Platform Audio Decoder API
 ---------------
 
-libaudiodecoder provides a common interface for low-level audio file playback on Windows and Mac OS X. 
-Wrapping the audio playback APIs provided by Windows and Mac OS X offers some important advantages:
+libaudiodecoder provides a common interface for low-level compressed audio file decoding on Windows and Mac OS X, giving
+you access to raw audio samples. Wrapping the audio APIs provided by Windows and Mac OS X has important benefits:
 
 *   **Portability**: One piece of code compiles and runs on both operating systems.
 *   **Reliability**: The native audio APIs on each OS tend to be fairly bug-free.
