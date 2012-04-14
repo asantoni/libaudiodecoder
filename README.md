@@ -103,6 +103,14 @@ Compatibility
 If you require support for all the different types of WAVE files (different encodings, bit depths, etc.), check out [libsndfile](http://www.mega-nerd.com/libsndfile/). It should also be noted that DRM encrypted files are not supported on any platform.
 
 
+Example Code
+============
+
+The "examples" directory currently contains *playsong*, which demonstrates how to decode an MP3 file with libaudiodecoder
+and play out the soundcard with PortAudio. The example requires PortAudio and libsndfile installed, and can be built
+with the project files provided for XCode 3 or greater on Mac OS X and Visual Studio 2008 on Windows.
+
+
 API Stability Warning
 =====================
 
