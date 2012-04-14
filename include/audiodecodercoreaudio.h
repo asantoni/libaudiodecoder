@@ -32,7 +32,7 @@
  * Any person wishing to distribute modifications to the Software is
  * requested to send the modifications to the original developer so that
  * they can be incorporated into the canonical version. It is also 
- * requested that these non-binding requests be included along with the 
+ * requested that these non-binding requests be included aint with the 
  * license above.
  */
 
@@ -68,10 +68,10 @@ class AudioDecoderCoreAudio : public AudioDecoderBase {
 public:
     AudioDecoderCoreAudio(const std::string filename);
     ~AudioDecoderCoreAudio();
-    // Overriding AbstractAudioDecoder
+    // Overriding AudioDecoderBase 
     int open();
-    long seek(long filepos);
-    unsigned read(unsigned long size, const SAMPLE *buffer);
+    int seek(int sampleIdx);
+    int read(int size, const SAMPLE *buffer);
     static std::vector<std::string> supportedFileExtensions();
 private:
     SInt64 m_headerFrames;

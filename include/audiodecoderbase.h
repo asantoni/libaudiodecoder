@@ -32,7 +32,7 @@
  * Any person wishing to distribute modifications to the Software is
  * requested to send the modifications to the original developer so that
  * they can be incorporated into the canonical version. It is also 
- * requested that these non-binding requests be included along with the 
+ * requested that these non-binding requests be included aint with the 
  * license above.
  */
 
@@ -63,25 +63,44 @@ class DllExport AudioDecoderBase
         AudioDecoderBase(const std::string filename);
         virtual ~AudioDecoderBase();
 
+        /** Opens the file for decoding */
         int open() { return 0; };
-        long seek(unsigned long filepos) { return 0l; };
-        unsigned read(unsigned long size, const SAMPLE *buffer) { return 0u; };
-        inline unsigned long    numSamples()        const { return m_iNumSamples; };
-        inline unsigned long    channels()          const { return m_iChannels; };
-        inline unsigned long    sampleRate()        const { return m_iSampleRate; };
-        inline float            duration()          const { return m_fDuration; };
-        inline unsigned long    positionInSamples() const { return m_iPositionInSamples; };
+
+        /** Seek to a sample in the file */
+        int seek(int filepos) { return 0l; };
+
+        /** Read a maximum of 'size' samples of audio into buffer. 
+            Returns the number of samples read. */
+        int read(int size, const SAMPLE *buffer) { return 0u; };
+
+        /** Get the number of samples in the audio file */
+        inline int    numSamples()        const { return m_iNumSamples; };
+
+        /** Get the number of channels in the audio file */
+        inline int    channels()          const { return m_iChannels; };
+
+        /** Get the sample rate of the audio file (samples per second) */
+        inline int    sampleRate()        const { return m_iSampleRate; };
+
+        /** Get the duration of the audio file (seconds) */
+        inline float  duration()          const { return m_fDuration; };
+
+        /** Get the current playback position in samples */
+        inline int    positionInSamples() const { return m_iPositionInSamples; };
+
+        /** Get a list of the filetypes supported by the decoder, by extension */
         static std::vector<std::string> supportedFileExtensions()
         { 
             return std::vector<std::string>();
         };
+
     protected:
         std::string     m_filename;
-        unsigned long   m_iNumSamples;
-        unsigned long   m_iChannels;
-        unsigned long   m_iSampleRate;
-        float           m_fDuration; // in seconds
-        unsigned long   m_iPositionInSamples; // in samples;
+        int   m_iNumSamples;
+        int   m_iChannels;
+        int   m_iSampleRate;
+        float m_fDuration; // in seconds
+        int   m_iPositionInSamples; // in samples;
 };
 
 #endif //__AUDIODECODERBASE_H__

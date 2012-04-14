@@ -29,9 +29,9 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     AudioDecoderMediaFoundation(const std::string filename);
     ~AudioDecoderMediaFoundation();
     int open();
-    long seek(unsigned long filepos);
-    unsigned read(unsigned long size, const SAMPLE *buffer);
-    inline unsigned long numSamples();
+    int seek(int sampleIdx);
+    int read(int size, const SAMPLE *buffer);
+    inline int numSamples();
     std::vector<std::string> supportedFileExtensions();
 
   private:

@@ -165,12 +165,12 @@ int AudioDecoderMediaFoundation::open()
     return AUDIODECODER_OK;
 }
 
-long AudioDecoderMediaFoundation::seek(unsigned long filepos)
+int AudioDecoderMediaFoundation::seek(int sampleIdx)
 {
-    if (sDebug) { std::cout << "seek() " << filepos << std::endl; }
+    if (sDebug) { std::cout << "seek() " << sampleIdx << std::endl; }
     PROPVARIANT prop;
     HRESULT hr(S_OK);
-    __int64 seekTarget(filepos / m_iChannels);
+    __int64 seekTarget(sampleIdx / m_iChannels);
     __int64 mfSeekTarget(mfFromFrame(seekTarget) - 1);
     // minus 1 here seems to make our seeking work properly, otherwise we will
     // (more often than not, maybe always) seek a bit too far (although not
@@ -199,7 +199,7 @@ long AudioDecoderMediaFoundation::seek(unsigned long filepos)
         std::cerr << "SSMF: failed to seek" << (
             hr == MF_E_INVALIDREQUEST ? "Sample requests still pending" : "");
     } else {
-        result = filepos;
+        result = sampleIdx;
     }
     PropVariantClear(&prop);
 
@@ -211,8 +211,7 @@ long AudioDecoderMediaFoundation::seek(unsigned long filepos)
     return result;
 }
 
-unsigned int AudioDecoderMediaFoundation::read(unsigned long size,
-    const SAMPLE *destination)
+int AudioDecoderMediaFoundation::read(long size, const SAMPLE *destination)
 {
 	assert(size < sizeof(m_destBufferShort));
     if (sDebug) { std::cout << "read() " << size << std::endl; }
@@ -419,9 +418,9 @@ releaseSample:
     return samples_read;
 }
 
-inline unsigned long AudioDecoderMediaFoundation::numSamples()
+inline int AudioDecoderMediaFoundation::numSamples()
 {
-    unsigned long len(secondsFromMF(m_mfDuration) * m_iSampleRate * m_iChannels);
+    int len(secondsFromMF(m_mfDuration) * m_iSampleRate * m_iChannels);
     return len % m_iChannels == 0 ? len : len + 1;
 }
 

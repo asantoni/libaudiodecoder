@@ -206,27 +206,26 @@ int AudioDecoderCoreAudio::open() {
     return AUDIODECODER_OK;
 }
 
-long AudioDecoderCoreAudio::seek(long filepos) {
+int AudioDecoderCoreAudio::seek(int sampleIdx) {
     OSStatus err = noErr;
-    SInt64 segmentStart = filepos / 2;
+    SInt64 segmentStart = sampleIdx / 2;
 
-      err = ExtAudioFileSeek(m_audioFile, (SInt64)segmentStart+m_headerFrames);
-      //_ThrowExceptionIfErr(@"ExtAudioFileSeek", err);
+    err = ExtAudioFileSeek(m_audioFile, (SInt64)segmentStart+m_headerFrames);
+    //_ThrowExceptionIfErr(@"ExtAudioFileSeek", err);
 	//qDebug() << "SSCA: Seeking to" << segmentStart;
 
-	//err = ExtAudioFileSeek(m_audioFile, filepos / 2);		
+	//err = ExtAudioFileSeek(m_audioFile, sampleIdx / 2);		
 	if (err != noErr)
 	{
-		//qDebug() << "SSCA: Error seeking to" << filepos;// << GetMacOSStatusErrorString(err) << GetMacOSStatusCommentString(err);
-        std::cerr << "AudioDecoderCoreAudio: Error seeking to sample " << filepos << std::endl;
+        std::cerr << "AudioDecoderCoreAudio: Error seeking to sample " << sampleIdx << std::endl;
 	}
 
-    m_iPositionInSamples = filepos;
+    m_iPositionInSamples = sampleIdx;
 
     return filepos;
 }
 
-unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *destination) {
+int AudioDecoderCoreAudio::read(int size, const SAMPLE *destination) {
     OSStatus err;
     SAMPLE *destBuffer(const_cast<SAMPLE*>(destination));
     unsigned int samplesWritten = 0;
@@ -271,52 +270,6 @@ unsigned int AudioDecoderCoreAudio::read(unsigned long size, const SAMPLE *desti
 
     return numFramesRead*m_iChannels;
 }
-
-/*
-int AudioDecoderCoreAudio::parseHeader() {
-    if (getFilename().endsWith(".m4a"))
-        setType("m4a");
-    else if (getFilename().endsWith(".mp3"))
-        setType("mp3");
-    else if (getFilename().endsWith(".mp2"))
-        setType("mp2");
-
-    bool result = false;
-
-    if (getType() == "m4a") {
-        TagLib::MP4::File f(getFilename().toUtf8().constData());
-        result = processTaglibFile(f);
-        TagLib::MP4::Tag* tag = f.tag();
-        if (tag) {
-            processMP4Tag(tag);
-        }
-    } else if (getType() == "mp3") {
-		TagLib::MPEG::File f(getFilename().toUtf8().constData());
-
-        // Takes care of all the default metadata
-        result = processTaglibFile(f);
-
-        // Now look for MP3 specific metadata (e.g. BPM)
-        TagLib::ID3v2::Tag* id3v2 = f.ID3v2Tag();
-        if (id3v2) {
-            processID3v2Tag(id3v2);
-        }
-
-        TagLib::APE::Tag *ape = f.APETag();
-        if (ape) {
-            processAPETag(ape);
-        }
-    } else if (getType() == "mp2") {
-        //TODO: MP2 metadata. Does anyone use mp2 files anymore?
-        //      Feels like 1995 again...
-    }
-
-
-    if (result)
-        return AUDIODECODER_OK;
-    return AUDIODECODER_ERROR;
-}
-*/
 
 
 // static
