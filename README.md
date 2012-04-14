@@ -1,28 +1,27 @@
 libaudiodecoder
 ===============
 
-The Native Audio Playback API
+The Cross-Platform Audio Playback API
 ---------------
 
-libaudiodecoder provides a common interface for low-level audio file playback on Windows, Mac OS X, and hopefully
-more platforms in the future. Wrapping the audio playback APIs provided by Windows and Mac OS X offers
-some important advantages:
+libaudiodecoder provides a common interface for low-level audio file playback on Windows and Mac OS X. 
+Wrapping the audio playback APIs provided by Windows and Mac OS X offers some important advantages:
 
 *   **Portability**: One piece of code compiles and runs on both operating systems.
 *   **Reliability**: The native audio APIs on each OS tend to be fairly bug-free.
-*   **Cost**: Using the native platform APIs allows you to avoid shipping MP3 and AAC decoders (like ffmpeg) 
-          with your application. Bundling such a decoder often requires royalty payments to the software 
-          patent holders. Fortunately, Windows and Mac OS X already come with licensed decoders, and
-          that's what libaudiodecoder is based on.
+*   **Cost**: Using the native platform APIs allows you to avoid shipping MP3 and AAC decoders (like ffmpeg and libmad) 
+          with your application. Bundling such a decoder often requires royalty payments to the software patent holders. 
+          Fortunately, Windows and Mac OS X already come with licensed decoders for applications to use instead, and
+          so that's what libaudiodecoder wraps.
 
-In more technical terms, we wrap the ExtAudioFile API (CoreAudio) on Mac OS X, and the Media Foundation API that's been part of Windows since Vista. Unfortunately, Media Foundation only works for decoding audio in Windows 7 and greater. 
+In more technical terms, we wrap the ExtAudioFile API (CoreAudio) on Mac OS X, and the Media Foundation API that's been part of Windows since Vista. Unfortunately, it turns out that Media Foundation only works for decoding audio in Windows 7 and greater. 
 
 
 API at a Glance
 ===============
 
 
-    ```c++
+```c++
     class AudioDecoder {
 
         /** Construct a decoder for a given audio file. */
@@ -36,6 +35,7 @@ API at a Glance
         int seek(int sampleIdx);
 
         /** Read a maximum of 'size' samples of audio into buffer. 
+            Samples are always returned as 32-bit floats, with stereo interlacing.
             Returns the number of samples read. */
         int read(int size, const SAMPLE *buffer);
 
@@ -57,7 +57,7 @@ API at a Glance
         /** Get a list of the filetypes supported by the decoder, by extension */
         static std::vector<std::string> supportedFileExtensions()
     };
-    ```
+```
 
 For the complete API, please see audiodecoderbase.h.
 
@@ -73,7 +73,7 @@ Compatibility
     </tr>
     <tr>
         <td>MP3</td>
-        <td>Yes<sup>*</sup>*</td>
+        <td>Yes<sup>*</sup></td>
         <td>Yes</td>
     </tr>
     <tr>
@@ -100,7 +100,7 @@ Compatibility
 
 * Requires Windows 7+ or greater
 
-If you require support for all the different types of WAVE files (different encodings, bit depths, etc.), check out libsndfile.  
+If you require support for all the different types of WAVE files (different encodings, bit depths, etc.), check out [libsndfile](http://www.mega-nerd.com/libsndfile/). It should also be noted that DRM encrypted files are not supported on any platform.
 
 
 API Stability Warning
@@ -108,9 +108,10 @@ API Stability Warning
 
 libaudiodecoder was developed primarily with Windows and Mac OS X in mind. Because most application developers on these platforms build and ship their own 3rd party libraries with their products, API changes will be noticed at compile time or during testing. We make no guarantees about the stability of the API at this point, though it's not likely to change too much. 
 
+
 Authors
 =======
 
-libaudiodecoder was originally created by RJ Ryan, Bill Good, and Albert Santoni from code we wrote for [Mixxx](http://www.mixxx.org/ "Mixxx"). Albert later refactored the code and rolled it into a separate library for use in [BeatCleaver](http://www.oscillicious.com/beatcleaver/ "BeatCleaver") by [Oscillicious](http://www.oscillicious.com/ "Oscillicious"). By sharing this code, we hope other developers will benefit from it in the same way open source has helped us. 
+libaudiodecoder was originally created by [RJ Ryan](http://rustyryan.net/), [Bill Good](https://github.com/bkgood), and [Albert Santoni](http://www.santoni.ca/albert) from code we wrote for [Mixxx](http://www.mixxx.org/ "Mixxx"). We later refactored the code and rolled it into a separate library for use in [BeatCleaver](http://www.oscillicious.com/beatcleaver/ "BeatCleaver") by [Oscillicious](http://www.oscillicious.com/ "Oscillicious"). By sharing this code, we hope other developers will benefit from it in the same way open source has helped us. 
 
 

@@ -70,6 +70,7 @@ class DllExport AudioDecoderBase
         int seek(int filepos) { return 0l; };
 
         /** Read a maximum of 'size' samples of audio into buffer. 
+            Samples are always returned as 32-bit floats, with stereo interlacing.
             Returns the number of samples read. */
         int read(int size, const SAMPLE *buffer) { return 0u; };
 
