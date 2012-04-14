@@ -1,0 +1,28 @@
+Compiling
+==========
+
+Windows:
+    You will need to compile PortAudio with Visual Studio and libaudiofile with
+    scons, then add the paths to their headers and .lib files to the 
+    MSVC project settings by setting:
+
+    	Project Properties -> Configuration Properties ->
+		C++ -> General
+		"Additional Include Directories"
+		
+		then
+
+		Linker -> General 
+		"Additional Lirary Directories"
+
+    On Windows, you will also need to:
+       1) Copy your portaudio_x86.dll and audiodecoder.dll to your Debug/Release
+          build folder(s) inside playsong.
+       2) Copy demo.mp3 to the same place.
+
+
+Mac OS X:
+    You will need to compile PortAudio and install it, either with scons or 
+    make, and then compile/install libaudiodecoder with scons.
+
+    The XCode project provided should compile and run after that...

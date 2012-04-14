@@ -39,7 +39,9 @@
  * license above.
  */
 
-
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <iostream>
 #include <audiodecoder/audiodecoder.h> // libaudiodecoder
 #include <portaudio.h>                 // PortAudio
@@ -103,8 +105,11 @@ int main (int argc, char * const argv[]) {
     // (managed by PortAudio) via the callback function we've defined below.
     // Since we have no GUI to in this example, we're just going to sleep here
     // for a while.
+#ifdef _WIN32
+	Sleep(20000);
+#else
     sleep(20);
-    
+#endif
     
     // Shutdown:
     // First, stop the PortAudio stream (closes the soundcard device).
