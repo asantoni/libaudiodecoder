@@ -87,12 +87,12 @@ Compatibility
         <td>Yes</td>
     </tr>
     <tr>
-        <td>WAVE (16-bit int)/td>
+        <td>WAVE (16-bit int)</td>
         <td>Yes</td>
         <td>Yes</td>
     </tr>
     <tr>
-        <td>WAVE (24-bit, 32-bit int)/td>
+        <td>WAVE (24-bit, 32-bit int)</td>
         <td>No</td>
         <td>Yes</td>
     </tr>
