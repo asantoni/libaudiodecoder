@@ -108,7 +108,24 @@ Example Code
 
 The "examples" directory currently contains *playsong*, which demonstrates how to decode an MP3 file with libaudiodecoder
 and play out the soundcard with PortAudio. The example requires PortAudio and libsndfile installed, and can be built
-with the project files provided for XCode 3 or greater on Mac OS X and Visual Studio 2008 on Windows.
+with the project files provided for XCode 3 or greater on Mac OS X and Visual Studio 2008 on Windows. Please see the
+README is the playsong directory for more compilation instructions.
+
+Compiling
+=========
+
+libaudiodecoder requires [SCons](http://www.scons.org) to build. To compile libaudiodecoder in debugging configuration, run:
+
+   scons debug=1 
+
+or for release configuration:
+
+   scons debug=0
+   
+To install system-wide on Mac OS X (recommended), run:
+
+   scons debug=0 install
+
 
 
 API Stability Warning
