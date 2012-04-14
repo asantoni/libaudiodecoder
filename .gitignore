@@ -23,6 +23,11 @@
 *.tar
 *.zip
 
+# XCode #
+######################
+*.mode1v3
+*.pbxuser
+
 # Logs and databases #
 ######################
 *.log
