@@ -98,7 +98,7 @@ Compatibility
     </tr>
 </table>
 
-* Requires Windows 7+ or greater
+\* Requires Windows 7+ or greater
 
 If you require support for all the different types of WAVE files (different encodings, bit depths, etc.), check out [libsndfile](http://www.mega-nerd.com/libsndfile/). It should also be noted that DRM encrypted files are not supported on any platform.
 
