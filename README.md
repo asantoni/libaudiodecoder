@@ -116,15 +116,15 @@ Compiling
 
 libaudiodecoder requires [SCons](http://www.scons.org) to build. To compile libaudiodecoder in debugging configuration, run:
 
-   scons debug=1 
+    scons debug=1 
 
 or for release configuration:
 
-   scons debug=0
+    scons debug=0
    
 To install system-wide on Mac OS X (recommended), run:
 
-   scons debug=0 install
+    scons debug=0 install
 
 
 
