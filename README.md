@@ -1,7 +1,7 @@
 libaudiodecoder
 ===============
 
-The Cross-Platform Audio Decoder API
+The Cross-Platform Audio Decoder API (C++)
 ---------------
 
 libaudiodecoder provides a common interface for low-level compressed audio file decoding on Windows and Mac OS X, giving
