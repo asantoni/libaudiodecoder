@@ -107,7 +107,7 @@ Example Code
 ============
 
 The "examples" directory currently contains *playsong*, which demonstrates how to decode an MP3 file with libaudiodecoder
-and play out the soundcard with PortAudio. The example requires PortAudio and libsndfile installed, and can be built
+and play out the soundcard with PortAudio. The example requires PortAudio and libaudiodecoder installed, and can be built
 with the project files provided for XCode 3 or greater on Mac OS X and Visual Studio 2008 on Windows. Please see the
 README is the playsong directory for more compilation instructions.
 
