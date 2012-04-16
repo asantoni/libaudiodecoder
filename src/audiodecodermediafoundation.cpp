@@ -211,7 +211,7 @@ int AudioDecoderMediaFoundation::seek(int sampleIdx)
     return result;
 }
 
-int AudioDecoderMediaFoundation::read(long size, const SAMPLE *destination)
+int AudioDecoderMediaFoundation::read(int size, const SAMPLE *destination)
 {
 	assert(size < sizeof(m_destBufferShort));
     if (sDebug) { std::cout << "read() " << size << std::endl; }

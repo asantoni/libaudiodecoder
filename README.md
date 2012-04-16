@@ -1,11 +1,11 @@
 libaudiodecoder
 ===============
 
-The Cross-Platform Audio Playback API
+The Cross-Platform Audio Decoder API (C++)
 ---------------
 
-libaudiodecoder provides a common interface for low-level audio file playback on Windows and Mac OS X. 
-Wrapping the audio playback APIs provided by Windows and Mac OS X offers some important advantages:
+libaudiodecoder provides a common interface for low-level compressed audio file decoding on Windows and Mac OS X, giving
+you access to raw audio samples. Wrapping the audio APIs provided by Windows and Mac OS X has important benefits:
 
 *   **Portability**: One piece of code compiles and runs on both operating systems.
 *   **Reliability**: The native audio APIs on each OS tend to be fairly bug-free.
@@ -90,12 +90,12 @@ Compatibility
         <td>Yes</td>
     </tr>
     <tr>
-        <td>WAVE (16-bit int)/td>
+        <td>WAVE (16-bit int)</td>
         <td>Yes</td>
         <td>Yes</td>
     </tr>
     <tr>
-        <td>WAVE (24-bit, 32-bit int)/td>
+        <td>WAVE (24-bit, 32-bit int)</td>
         <td>No</td>
         <td>Yes</td>
     </tr>
@@ -104,6 +104,31 @@ Compatibility
 \* Requires Windows 7+ or greater
 
 If you require support for all the different types of WAVE files (different encodings, bit depths, etc.), check out [libsndfile](http://www.mega-nerd.com/libsndfile/). It should also be noted that DRM encrypted files are not supported on any platform.
+
+
+Example Code
+============
+
+The "examples" directory currently contains *playsong*, which demonstrates how to decode an MP3 file with libaudiodecoder
+and play out the soundcard with PortAudio. The example requires PortAudio and libaudiodecoder installed, and can be built
+with the project files provided for XCode 3 or greater on Mac OS X and Visual Studio 2008 on Windows. Please see the
+README is the playsong directory for more compilation instructions.
+
+Compiling
+=========
+
+libaudiodecoder requires [SCons](http://www.scons.org) to build. To compile libaudiodecoder in debugging configuration, run:
+
+    scons debug=1 
+
+or for release configuration:
+
+    scons debug=0
+   
+To install system-wide on Mac OS X (recommended), run:
+
+    scons debug=0 install
+
 
 
 API Stability Warning
