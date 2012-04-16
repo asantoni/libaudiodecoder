@@ -39,7 +39,9 @@ API at a Glance
             Returns the number of samples read. */
         int read(int size, const SAMPLE *buffer);
 
-        /** Get the number of samples in the audio file */
+        /** Get the number of audio samples in the file. This will be a good estimate of the 
+            number of samples you can get out of read(), though you should not rely on it
+            being perfectly accurate always. (eg. it might be slightly inaccurate with VBR MP3s)*/
         inline int    numSamples()        const;
 
         /** Get the number of channels in the audio file */
@@ -60,6 +62,7 @@ API at a Glance
 ```
 
 For the complete API, please see audiodecoderbase.h.
+Please note that at present, all API calls are blocking and none are considered real-time safe. For best performance, please do not call read() or any other libaudiodecoder function from inside your audio callback.
 
 
 Compatibility

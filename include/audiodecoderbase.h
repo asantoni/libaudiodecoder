@@ -56,6 +56,11 @@ typedef float SAMPLE;
 #define AUDIODECODER_ERROR -1
 #define AUDIODECODER_OK     0
 
+/** 
+A word on real-time safety: 
+At present, all API calls are blocking and none are considered real-time safe. For best performance,
+try to avoid calling read() or any other libaudiodecoder function from inside your audio callback.
+*/
 
 class DllExport AudioDecoderBase
 {
@@ -74,7 +79,9 @@ class DllExport AudioDecoderBase
             Returns the number of samples read. */
         int read(int size, const SAMPLE *buffer) { return 0u; };
 
-        /** Get the number of samples in the audio file */
+        /** Get the number of audio samples in the file. This will be a good estimate of the 
+            number of samples you can get out of read(), though you should not rely on it
+            being perfectly accurate always. (eg. it might be slightly inaccurate with VBR MP3s)*/
         inline int    numSamples()        const { return m_iNumSamples; };
 
         /** Get the number of channels in the audio file */
