@@ -24,7 +24,9 @@ API at a Glance
 ```c++
     class AudioDecoder {
 
-        /** Construct a decoder for a given audio file. */
+        /** Construct a decoder for a given audio file.
+            @param filename A UTF-8 string containing the full path to the audio file to open.
+		*/
         AudioDecoder(const std::string filename);
         virtual ~AudioDecoder();
 
@@ -135,6 +137,12 @@ API Stability Warning
 =====================
 
 libaudiodecoder was developed primarily with Windows and Mac OS X in mind. Because most application developers on these platforms build and ship their own 3rd party libraries with their products, API changes will be noticed at compile time or during testing. We make no guarantees about the stability of the API at this point, though it's not likely to change too much. 
+
+
+String Encoding
+===============
+
+All strings in the API are assumed to be UTF-8 encoded. 
 
 
 Authors
