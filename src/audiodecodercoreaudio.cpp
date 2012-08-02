@@ -67,7 +67,8 @@ int AudioDecoderCoreAudio::open() {
                 */
     CFStringRef urlStr = CFStringCreateWithCString(kCFAllocatorDefault, 
                                                    m_filename.c_str(), 
-                                                   CFStringGetSystemEncoding());
+                                                   kCFStringEncodingUTF8);
+                                                   //CFStringGetSystemEncoding());
 
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(NULL, urlStr, kCFURLPOSIXPathStyle, false);
     err = ExtAudioFileOpenURL(urlRef, &m_audioFile);
@@ -222,7 +223,7 @@ int AudioDecoderCoreAudio::seek(int sampleIdx) {
 
     m_iPositionInSamples = sampleIdx;
 
-    return filepos;
+    return m_iPositionInSamples; //filepos;
 }
 
 int AudioDecoderCoreAudio::read(int size, const SAMPLE *destination) {

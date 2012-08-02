@@ -104,12 +104,9 @@ int AudioDecoderMediaFoundation::open()
         std::cout << "open() " << m_filename << std::endl;
     }
 
-    //QString qurlStr(m_qFilename);
-    //int wcFilenameLength(m_qFilename.toWCharArray(m_wcFilename));
-    // toWCharArray does not append a null terminator to the string!
-    //m_wcFilename[wcFilenameLength] = '\0';
+    //Assumes m_filename is ASCII and converts it to UTF-16 (wide char).
+    /*
 	int wcFilenameLength = m_filename.size();
-	//m_wcFilename=new wchar_t[wcFilenameLength]; //already allocated in constructor
 	for(std::wstring::size_type i=0; i < m_filename.size(); ++i)
 	{
 		m_wcFilename[i] = m_filename[i];
@@ -118,12 +115,21 @@ int AudioDecoderMediaFoundation::open()
 
 	std::string s;
 
-//#ifdef UNICODE
 	std::wstring stemp = s2ws(m_filename); // Temporary buffer is required
 	LPCWSTR result = (LPCWSTR)stemp.c_str();
-//#else
-//	LPCWSTR result = (LPCWSTR)s.c_str();
-//#endif
+    */
+   
+    LPCWSTR result; 
+    char* utf8Str = m_filename.c_str();
+    wchar_t* utf16Str = new wchar_t[512];
+    MultiByteToWideChar(CP_UTF8, 
+                        0, 
+                        utf8Str, 
+                        -1, //assume utf8Str is NULL terminated and give us back a NULL terminated string
+                        (LPCWSTR)utf16Str,
+                        512);
+    
+    LPCWSTR result = utf16Str;
 
     HRESULT hr(S_OK);
     // Initialize the COM library.
