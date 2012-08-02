@@ -119,17 +119,16 @@ int AudioDecoderMediaFoundation::open()
 	LPCWSTR result = (LPCWSTR)stemp.c_str();
     */
    
-    LPCWSTR result; 
-    char* utf8Str = m_filename.c_str();
-    wchar_t* utf16Str = new wchar_t[512];
+    //LPCWSTR result; 
+    const char* utf8Str = m_filename.c_str();
     MultiByteToWideChar(CP_UTF8, 
                         0, 
                         utf8Str, 
                         -1, //assume utf8Str is NULL terminated and give us back a NULL terminated string
-                        (LPCWSTR)utf16Str,
+                        (LPWSTR)m_wcFilename,
                         512);
     
-    LPCWSTR result = utf16Str;
+    LPCWSTR result = m_wcFilename;
 
     HRESULT hr(S_OK);
     // Initialize the COM library.

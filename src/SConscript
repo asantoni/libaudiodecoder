@@ -72,8 +72,8 @@ if platform_is_macosx:
     env.Append(LINKFLAGS='-framework AudioToolbox -framework CoreFoundation')
 
 if platform_is_windows:
-    env.Append(LIBPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Lib')
-    env.Append(CPPPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Include')
+    env.Append(LIBPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Lib')
+    env.Append(CPPPATH='C:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Include')
 
 if not env.GetOption('clean') and not SCons.Util.containsAny(os.sys.argv, ['-h', '--help']):
     conf = Configure(env)
