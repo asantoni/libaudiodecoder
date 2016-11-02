@@ -119,17 +119,36 @@ README is the playsong directory for more compilation instructions.
 Compiling
 =========
 
-libaudiodecoder requires [SCons](http://www.scons.org) to build. To compile libaudiodecoder in debugging configuration, run:
+libaudiodecoder requires [SCons](http://www.scons.org) to build. Install that before proceeding.
 
-    scons debug=1 
+
+**Compiling on Windows**
+
+Open a command prompt and run vcvarsall.bat for the Visual Studio compiler version you wish to use.
+For example, to compile with Visual Studio 2015 ("MSVC 14.0"), you would run:
+
+    "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\vcvarsall.bat"
+    scons debug=1 msvc_version=14.0 target_arch=x86
+
+If you need the library to run on Windows Vista, add this extra argument to scons:
+
+    scons vista_compatible=1
+
+
+**General Tips and Compiling on Mac OS X**
+
+To compile libaudiodecoder in debugging configuration, run:
+
+    scons debug=1
 
 or for release configuration:
 
     scons debug=0
-   
+
 To install system-wide on Mac OS X (recommended), run:
 
     scons debug=0 install
+
 
 
 
