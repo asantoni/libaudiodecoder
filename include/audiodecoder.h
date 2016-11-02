@@ -49,6 +49,10 @@ class DllExport AudioDecoder : public AudioDecoderMediaFoundation
 {
     public:
         AudioDecoder(const std::string filename) : AudioDecoderMediaFoundation(filename) {};
+    private:
+        //Disable copy constructor and assignment operator
+        AudioDecoder(const AudioDecoder& that);
+        AudioDecoder& operator=(AudioDecoder const&);
 };
 
 #elif __APPLE__
@@ -57,6 +61,10 @@ class AudioDecoder : public AudioDecoderCoreAudio
 {
     public:
         AudioDecoder(const std::string filename) : AudioDecoderCoreAudio(filename) {};
+    private:
+        //Disable copy constructor and assignment operator
+        AudioDecoder(const AudioDecoder& that);
+        AudioDecoder& operator=(AudioDecoder const&);
 };
 #endif
 
