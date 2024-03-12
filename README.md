@@ -12,7 +12,7 @@ you access to raw audio samples. Wrapping the audio APIs provided by Windows and
 *   **Cost**: Using the native platform APIs allows you to avoid shipping MP3 and AAC decoders (like ffmpeg and libmad) 
           with your application. Bundling such a decoder often requires royalty payments to the software patent holders. 
           Fortunately, Windows and Mac OS X already come with licensed decoders for applications to use instead, and
-          so that's what libaudiodecoder wraps.
+          so that's what libaudiodecoder wraps. (This is not legal advice and we are not lawyers.)
 
 In more technical terms, we wrap the ExtAudioFile API (CoreAudio) on Mac OS X, and the Media Foundation API that's been part of Windows since Vista. Unfortunately, it turns out that Media Foundation only works for decoding audio in Windows 7 and greater. 
 
@@ -119,8 +119,7 @@ README is the playsong directory for more compilation instructions.
 Compiling
 =========
 
-libaudiodecoder requires [SCons](http://www.scons.org) to build. Install that before proceeding.
-
+libaudiodecoder compiles with [CMake](https://cmake.org/). Install that before proceeding.
 
 **Compiling on Windows**
 
@@ -128,28 +127,30 @@ Open a command prompt and run vcvarsall.bat for the Visual Studio compiler versi
 For example, to compile with Visual Studio 2015 ("MSVC 14.0"), you would run:
 
     "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\vcvarsall.bat"
-    scons debug=1 msvc_version=14.0 target_arch=x86
-
-If you need the library to run on Windows Vista, add this extra argument to scons:
-
-    scons vista_compatible=1
-
+    cmake .
+    cmake --build .
+    (or open libaudiodecoder.sln in Visual Studio)
 
 **General Tips and Compiling on Mac OS X**
 
 To compile libaudiodecoder in debugging configuration, run:
 
-    scons debug=1
+    cmake -DCMAKE_BUILD_TYPE=Debug .
+    cmake --build .
 
-or for release configuration:
+To configure a release build, use:
 
-    scons debug=0
-
-To install system-wide on Mac OS X (recommended), run:
-
-    scons debug=0 install
+    cmake -DCMAKE_BUILD_TYPE=Release .
+    cmake --build .
 
 
+Recent Notable Changes
+=====================
+
+* March 2024: 
+   - Replaced SCons with CMake (3.10+) as the build system.
+   - Removed Windows Vista-specific build option (Windows 7 now required, but you can hack Vista support back in, if needed). 
+   - Mac build is untested with CMake but should work (patches welcome).
 
 
 API Stability Warning
@@ -173,7 +174,7 @@ libaudiodecoder was originally created by [RJ Ryan](http://rustyryan.net/), [Bil
 License (MIT)
 =============
 
-Copyright (c) 2010-2012 Albert Santoni, Bill Good, RJ Ryan  
+Copyright (c) 2010-2024 Albert Santoni, Bill Good, RJ Ryan  
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files
