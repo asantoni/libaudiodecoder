@@ -65,17 +65,17 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     int open();
     int seek(int sampleIdx);
     int read(int size, const SAMPLE *buffer);
-    inline int numSamples();
+    int numSamples() const;
     std::vector<std::string> supportedFileExtensions();
 
   private:
     bool configureAudioStream();
     bool readProperties();
     void copyFrames(short *dest, size_t *destFrames, const short *src, size_t srcFrames);
-    inline double secondsFromMF(__int64 mf);
-    inline __int64 mfFromSeconds(double sec);
-    inline __int64 frameFromMF(__int64 mf);
-    inline __int64 mfFromFrame(__int64 frame);
+    static double secondsFromMF(__int64 mf);
+    static __int64 mfFromSeconds(double sec);
+    __int64 frameFromMF(__int64 mf) const;
+    __int64 mfFromFrame(__int64 frame) const;
     IMFSourceReader *m_pReader;
     IMFMediaType *m_pAudioType;
     wchar_t *m_wcFilename;

@@ -464,7 +464,7 @@ releaseSample:
     return samples_read;
 }
 
-inline int AudioDecoderMediaFoundation::numSamples()
+int AudioDecoderMediaFoundation::numSamples() const
 {
     int len(secondsFromMF(m_mfDuration) * m_iSampleRate * m_iChannels);
     return len % m_iChannels == 0 ? len : len + 1;
@@ -743,7 +743,7 @@ void AudioDecoderMediaFoundation::copyFrames(
 /**
  * Convert a 100ns Media Foundation value to a number of seconds.
  */
-inline double AudioDecoderMediaFoundation::secondsFromMF(__int64 mf)
+double AudioDecoderMediaFoundation::secondsFromMF(__int64 mf)
 {
     return static_cast<double>(mf) / 1e7;
 }
@@ -751,7 +751,7 @@ inline double AudioDecoderMediaFoundation::secondsFromMF(__int64 mf)
 /**
  * Convert a number of seconds to a 100ns Media Foundation value.
  */
-inline __int64 AudioDecoderMediaFoundation::mfFromSeconds(double sec)
+__int64 AudioDecoderMediaFoundation::mfFromSeconds(double sec)
 {
     return sec * 1e7;
 }
@@ -759,7 +759,7 @@ inline __int64 AudioDecoderMediaFoundation::mfFromSeconds(double sec)
 /**
  * Convert a 100ns Media Foundation value to a frame offset.
  */
-inline __int64 AudioDecoderMediaFoundation::frameFromMF(__int64 mf)
+__int64 AudioDecoderMediaFoundation::frameFromMF(__int64 mf) const
 {
     return static_cast<double>(mf) * m_iSampleRate / 1e7;
 }
@@ -767,7 +767,7 @@ inline __int64 AudioDecoderMediaFoundation::frameFromMF(__int64 mf)
 /**
  * Convert a frame offset to a 100ns Media Foundation value.
  */
-inline __int64 AudioDecoderMediaFoundation::mfFromFrame(__int64 frame)
+__int64 AudioDecoderMediaFoundation::mfFromFrame(__int64 frame) const
 {
     return static_cast<double>(frame) / m_iSampleRate * 1e7;
 }
