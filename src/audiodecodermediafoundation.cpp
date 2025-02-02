@@ -124,8 +124,9 @@ AudioDecoderMediaFoundation::~AudioDecoderMediaFoundation()
     safeRelease(&m_pReader);
     safeRelease(&m_pAudioType);
     MFShutdown();
-    if (!m_com_preinitialized)
+    if (!m_com_preinitialized) {
         CoUninitialize();
+    }
 }
 
 int AudioDecoderMediaFoundation::open()
@@ -174,8 +175,9 @@ int AudioDecoderMediaFoundation::open()
         std::cerr << "SSMF: failed to initialize COM" << std::endl;
         return AUDIODECODER_ERROR;
     }
-    if (hr != RPC_E_CHANGED_MODE)
+    if (hr != RPC_E_CHANGED_MODE) {
         m_com_preinitialized = true;
+    }
 
     // Initialize the Media Foundation platform.
     hr = MFStartup(MF_VERSION);
