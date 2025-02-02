@@ -71,8 +71,7 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
   private:
     bool configureAudioStream();
     bool readProperties();
-    void copyFrames(short *dest, size_t *destFrames, const short *src,
-        size_t srcFrames);
+    void copyFrames(short *dest, size_t *destFrames, const short *src, size_t srcFrames);
     inline double secondsFromMF(__int64 mf);
     inline __int64 mfFromSeconds(double sec);
     inline __int64 frameFromMF(__int64 mf);
@@ -89,8 +88,8 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     long m_iCurrentPosition;
     bool m_dead;
     bool m_seeking;
-	unsigned int m_iBitsPerSample;
-	SHORT_SAMPLE m_destBufferShort[8192];
+    unsigned int m_iBitsPerSample;
+    SHORT_SAMPLE m_destBufferShort[8192];
     bool m_com_preinitialized = false;
 };
 
