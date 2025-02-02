@@ -124,7 +124,8 @@ AudioDecoderMediaFoundation::~AudioDecoderMediaFoundation()
     safeRelease(&m_pReader);
     safeRelease(&m_pAudioType);
     MFShutdown();
-    CoUninitialize();
+    if (!m_com_preinitialized)
+        CoUninitialize();
 }
 
 int AudioDecoderMediaFoundation::open()
@@ -161,11 +162,20 @@ int AudioDecoderMediaFoundation::open()
 
     HRESULT hr(S_OK);
     // Initialize the COM library.
+    /*
+    If COM is already initialized CoInitialize will either return
+    FALSE, or RPC_E_CHANGED_MODE if it was initialized in a different
+    threading mode. In either case we shouldn't consider it an error
+    but we need to be careful to not call CoUninitialize() if
+    RPC_E_CHANGED_MODE was returned.
+    */
     hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr)) {
+    if (FAILED(hr) && (hr != RPC_E_CHANGED_MODE)) {
         std::cerr << "SSMF: failed to initialize COM" << std::endl;
         return AUDIODECODER_ERROR;
     }
+    if (hr != RPC_E_CHANGED_MODE)
+        m_com_preinitialized = true;
 
     // Initialize the Media Foundation platform.
     hr = MFStartup(MF_VERSION);

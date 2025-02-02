@@ -52,9 +52,9 @@
 
 #include "audiodecoderbase.h"
 
-class IMFSourceReader;
-class IMFMediaType;
-class IMFMediaSource;
+struct IMFSourceReader;
+struct IMFMediaType;
+struct IMFMediaSource;
 
 #define SHORT_SAMPLE short
 
@@ -91,6 +91,7 @@ class DllExport AudioDecoderMediaFoundation : public AudioDecoderBase {
     bool m_seeking;
 	unsigned int m_iBitsPerSample;
 	SHORT_SAMPLE m_destBufferShort[8192];
+    bool m_com_preinitialized = false;
 };
 
 #endif // ifndef AUDIODECODERMEDIAFOUNDATION_H
